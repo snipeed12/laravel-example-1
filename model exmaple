@@ -1,0 +1,31 @@
+1.Models thì mập, Controllers thì gầy - Fat models, skinny controllers
+Đặt tất cả các logic liên quan đến DB vào các Eloquent model hoặc vào các lớp Repository nếu bạn đang sử dụng Query Builder hoặc raw Query.
+
+Coder Laravel gà sẽ viết:
+public function index()
+{
+    $clients = Client::verified()
+        ->with(['orders' => function ($q) {
+            $q->where('created_at', '>', Carbon::today()->subWeek());
+        }])
+        ->get();
+
+    return view('index', ['clients' => $clients]);
+}
+->
+public function index()
+{
+    return view('index', ['clients' => $this->client->getWithNewOrders()]);
+}
+
+class Client extends Model
+{
+    public function getWithNewOrders()
+    {
+        return $this->verified()
+            ->with(['orders' => function ($q) {
+                $q->where('created_at', '>', Carbon::today()->subWeek());
+            }])
+            ->get();
+    }
+}
